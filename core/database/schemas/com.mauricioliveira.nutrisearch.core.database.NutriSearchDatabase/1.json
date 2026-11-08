@@ -1,0 +1,142 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "2cd25c586690a176ee4b2931e5b02c28",
+    "entities": [
+      {
+        "tableName": "professionals",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `name` TEXT NOT NULL, `rating` INTEGER NOT NULL, `rating_count` INTEGER NOT NULL, `languages` TEXT NOT NULL, `expertise` TEXT NOT NULL, `profile_picture_url` TEXT, `about_me` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rating",
+            "columnName": "rating",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ratingCount",
+            "columnName": "rating_count",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "languages",
+            "columnName": "languages",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "expertise",
+            "columnName": "expertise",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "profilePictureUrl",
+            "columnName": "profile_picture_url",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "aboutMe",
+            "columnName": "about_me",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "search_results",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`sort_by` TEXT NOT NULL, `position` INTEGER NOT NULL, `professional_id` INTEGER NOT NULL, PRIMARY KEY(`sort_by`, `position`))",
+        "fields": [
+          {
+            "fieldPath": "sortBy",
+            "columnName": "sort_by",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "professionalId",
+            "columnName": "professional_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "sort_by",
+            "position"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_search_results_professional_id",
+            "unique": false,
+            "columnNames": [
+              "professional_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_search_results_professional_id` ON `${TABLE_NAME}` (`professional_id`)"
+          }
+        ]
+      },
+      {
+        "tableName": "remote_keys",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`sort_by` TEXT NOT NULL, `next_offset` INTEGER, `last_updated` INTEGER NOT NULL, PRIMARY KEY(`sort_by`))",
+        "fields": [
+          {
+            "fieldPath": "sortBy",
+            "columnName": "sort_by",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nextOffset",
+            "columnName": "next_offset",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "lastUpdated",
+            "columnName": "last_updated",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "sort_by"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2cd25c586690a176ee4b2931e5b02c28')"
+    ]
+  }
+}

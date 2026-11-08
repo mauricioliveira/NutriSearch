@@ -1,0 +1,4 @@
+<resources>
+    <!-- Window theme only; the UI is themed in Compose by NutriSearchTheme. -->
+    <style name="Theme.NutriSearch" parent="android:Theme.Material.Light.NoActionBar" />
+</resources>
