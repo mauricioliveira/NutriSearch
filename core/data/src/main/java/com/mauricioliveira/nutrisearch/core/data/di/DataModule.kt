@@ -3,7 +3,9 @@ package com.mauricioliveira.nutrisearch.core.data.di
 import com.mauricioliveira.nutrisearch.core.data.BuildConfig
 import com.mauricioliveira.nutrisearch.core.data.remote.HttpClientFactory
 import com.mauricioliveira.nutrisearch.core.data.remote.NutriSearchApi
+import com.mauricioliveira.nutrisearch.core.data.repository.DefaultProfessionalRepository
 import com.mauricioliveira.nutrisearch.core.database.di.databaseModule
+import com.mauricioliveira.nutrisearch.core.domain.repository.ProfessionalRepository
 import io.ktor.client.engine.okhttp.OkHttp
 import org.koin.dsl.module
 
@@ -17,5 +19,5 @@ val dataModule = module {
         )
     }
     single { NutriSearchApi(get()) }
-    // TODO: bind ProfessionalRepository once the RemoteMediator-backed implementation lands.
+    single<ProfessionalRepository> { DefaultProfessionalRepository(api = get(), database = get()) }
 }

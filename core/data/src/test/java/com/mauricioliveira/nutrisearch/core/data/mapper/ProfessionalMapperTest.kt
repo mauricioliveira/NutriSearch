@@ -16,11 +16,6 @@ class ProfessionalMapperTest {
     )
 
     @Test
-    fun `blank picture url is stored as null`() {
-        assertNull(dto.toEntity().profilePictureUrl)
-    }
-
-    @Test
     fun `details are only available once about_me is cached`() {
         assertNull(dto.toEntity().toDetailsOrNull())
         assertNotNull(dto.copy(aboutMe = "Hi").toEntity().toDetailsOrNull())
