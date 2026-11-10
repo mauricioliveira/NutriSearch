@@ -12,7 +12,7 @@ internal fun ProfessionalDto.toEntity() = ProfessionalEntity(
     ratingCount = ratingCount,
     languages = languages,
     expertise = expertise,
-    profilePictureUrl = profilePictureUrl?.takeIf { it.isNotBlank() },
+    profilePictureUrl = profilePictureUrl,
     aboutMe = aboutMe,
 )
 
