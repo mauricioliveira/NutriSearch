@@ -8,6 +8,7 @@ android {
     compileSdk = libs.versions.compileSdk.get().toInt()
     defaultConfig {
         minSdk = libs.versions.minSdk.get().toInt()
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "API_BASE_URL", "\"https://nutrisearch.vercel.app/\"")
     }
     buildFeatures {
@@ -36,4 +37,8 @@ dependencies {
     testImplementation(libs.ktor.client.mock)
     testImplementation(libs.androidx.paging.testing)
     testImplementation(kotlin("test"))
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.kotlinx.coroutines.test)
+    androidTestImplementation(libs.ktor.client.mock)
 }
