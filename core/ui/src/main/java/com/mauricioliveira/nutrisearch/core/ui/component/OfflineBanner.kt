@@ -31,10 +31,13 @@ fun OfflineBanner(modifier: Modifier = Modifier) {
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(Icons.Default.CloudOff, contentDescription = null)
+            Icon(
+                imageVector = Icons.Default.CloudOff,
+                contentDescription = null,
+            )
             Text(
                 text = stringResource(R.string.offline_banner),
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodyMedium,
             )
         }
     }

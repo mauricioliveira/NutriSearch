@@ -26,6 +26,7 @@ dependencies {
     api(projects.core.domain)
     api(platform(libs.androidx.compose.bom))
     api(libs.bundles.compose)
+    implementation(libs.coil.compose)
     debugImplementation(libs.androidx.compose.ui.tooling)
 
     testImplementation(libs.junit)

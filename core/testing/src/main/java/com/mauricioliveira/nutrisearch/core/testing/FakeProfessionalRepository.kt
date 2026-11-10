@@ -1,5 +1,7 @@
 package com.mauricioliveira.nutrisearch.core.testing
 
+import androidx.paging.LoadState
+import androidx.paging.LoadStates
 import androidx.paging.PagingData
 import com.mauricioliveira.nutrisearch.core.domain.model.AppError
 import com.mauricioliveira.nutrisearch.core.domain.model.Professional
@@ -19,9 +21,13 @@ class FakeProfessionalRepository : ProfessionalRepository {
     var refreshError: AppError? = null
     var refreshCalls = 0
 
+    /** Static data fully loaded, so paging-testing's asSnapshot sees an idle end state. */
+    private val loaded = LoadState.NotLoading(endOfPaginationReached = true)
+        .let { LoadStates(refresh = it, prepend = it, append = it) }
+
     override fun searchProfessionals(sort: ProfessionalSort): Flow<PagingData<Professional>> {
         requestedSorts += sort
-        return flowOf(PagingData.from(resultsBySort[sort].orEmpty()))
+        return flowOf(PagingData.from(resultsBySort[sort].orEmpty(), sourceLoadStates = loaded))
     }
 
     override fun observeProfessional(id: Int): Flow<ProfessionalDetails?> = details

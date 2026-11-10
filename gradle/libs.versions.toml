@@ -72,7 +72,6 @@ feature = [
     "androidx-navigation-compose",
     "kotlinx-serialization-json",
     "koin-androidx-compose",
-    "coil-compose",
 ]
 ktor = [
     "ktor-client-core",

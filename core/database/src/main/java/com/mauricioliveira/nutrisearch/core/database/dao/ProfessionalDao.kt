@@ -5,6 +5,7 @@ import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Upsert
 import com.mauricioliveira.nutrisearch.core.database.entity.ProfessionalEntity
+import com.mauricioliveira.nutrisearch.core.database.entity.ProfessionalSummaryEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -30,31 +31,11 @@ interface ProfessionalDao {
     fun observeById(id: Int): Flow<ProfessionalEntity?>
 
     /**
-     * Upserts list results without wiping an already cached about_me,
-     * since the search endpoint does not return it.
+     * Partial upsert: inserts new rows (about_me = null) and, for existing rows,
+     * updates only the summary columns, so a cached about_me survives list refreshes.
      */
-    @Query(
-        """
-        INSERT INTO professionals (id, name, rating, rating_count, languages, expertise, profile_picture_url)
-        VALUES (:id, :name, :rating, :ratingCount, :languages, :expertise, :profilePictureUrl)
-        ON CONFLICT(id) DO UPDATE SET
-            name = excluded.name,
-            rating = excluded.rating,
-            rating_count = excluded.rating_count,
-            languages = excluded.languages,
-            expertise = excluded.expertise,
-            profile_picture_url = excluded.profile_picture_url
-        """,
-    )
-    suspend fun upsertSummary(
-        id: Int,
-        name: String,
-        rating: Int,
-        ratingCount: Int,
-        languages: List<String>,
-        expertise: List<String>,
-        profilePictureUrl: String?,
-    )
+    @Upsert(entity = ProfessionalEntity::class)
+    suspend fun upsertSummaries(summaries: List<ProfessionalSummaryEntity>)
 
     /** Full upsert, used by the profile endpoint which includes about_me. */
     @Upsert

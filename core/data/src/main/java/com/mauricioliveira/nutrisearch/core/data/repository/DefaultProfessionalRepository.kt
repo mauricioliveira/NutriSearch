@@ -34,7 +34,6 @@ internal class DefaultProfessionalRepository(
         Pager(
             config = PagingConfig(
                 pageSize = PAGE_SIZE,
-                initialLoadSize = PAGE_SIZE,
                 prefetchDistance = 2,
                 enablePlaceholders = false
             ),

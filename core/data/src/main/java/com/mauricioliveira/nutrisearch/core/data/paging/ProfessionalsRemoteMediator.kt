@@ -6,10 +6,9 @@ import androidx.paging.PagingState
 import androidx.paging.RemoteMediator
 import androidx.room.withTransaction
 import com.mauricioliveira.nutrisearch.core.data.mapper.toAppError
+import com.mauricioliveira.nutrisearch.core.data.mapper.toSummaryEntity
 import com.mauricioliveira.nutrisearch.core.data.remote.NutriSearchApi
-import com.mauricioliveira.nutrisearch.core.data.remote.dto.ProfessionalDto
 import com.mauricioliveira.nutrisearch.core.database.NutriSearchDatabase
-import com.mauricioliveira.nutrisearch.core.database.dao.ProfessionalDao
 import com.mauricioliveira.nutrisearch.core.database.entity.ProfessionalEntity
 import com.mauricioliveira.nutrisearch.core.database.entity.RemoteKeyEntity
 import com.mauricioliveira.nutrisearch.core.database.entity.SearchResultEntity
@@ -73,9 +72,9 @@ internal class ProfessionalsRemoteMediator(
                     searchResultDao.clear(sortBy)
                 }
 
-                response.professionals.forEach {
-                    professionalDao.upsertSummary(it)
-                }
+                professionalDao.upsertSummaries(
+                    summaries = response.professionals.map { it.toSummaryEntity() }
+                )
 
                 searchResultDao.insertAll(
                     response.professionals.mapIndexed { index, dto ->
@@ -108,17 +107,6 @@ internal class ProfessionalsRemoteMediator(
             MediatorResult.Error(e.toAppError())
         }
     }
-
-    private suspend fun ProfessionalDao.upsertSummary(dto: ProfessionalDto) =
-        upsertSummary(
-            id = dto.id,
-            name = dto.name,
-            rating = dto.rating,
-            ratingCount = dto.ratingCount,
-            languages = dto.languages,
-            expertise = dto.expertise,
-            profilePictureUrl = dto.profilePictureUrl,
-        )
 
     private companion object {
         const val DEFAULT_CACHE_TIMEOUT_MILLIS = 10 * 60 * 1000L // 10 minutes

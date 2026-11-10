@@ -47,7 +47,7 @@ internal fun aDto(id: Int) = ProfessionalDto(
     name = "Professional $id",
     rating = 4,
     ratingCount = 10 * id,
-    languages = listOf("English"),
-    expertise = listOf("Weight Loss"),
+    languages = listOf("English", "Portuguese"),
+    expertise = listOf("Weight Loss", "Nutrition"),
     profilePictureUrl = null,
 )
