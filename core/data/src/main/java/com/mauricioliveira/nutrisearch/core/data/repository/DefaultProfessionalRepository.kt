@@ -7,7 +7,7 @@ import androidx.paging.PagingData
 import androidx.paging.map
 import com.mauricioliveira.nutrisearch.core.data.mapper.apiValue
 import com.mauricioliveira.nutrisearch.core.data.mapper.toAppError
-import com.mauricioliveira.nutrisearch.core.data.mapper.toDetailsOrNull
+import com.mauricioliveira.nutrisearch.core.data.mapper.toDetails
 import com.mauricioliveira.nutrisearch.core.data.mapper.toDomain
 import com.mauricioliveira.nutrisearch.core.data.mapper.toEntity
 import com.mauricioliveira.nutrisearch.core.data.paging.ProfessionalsRemoteMediator
@@ -47,7 +47,7 @@ internal class DefaultProfessionalRepository(
 
     override fun observeProfessional(id: Int): Flow<ProfessionalDetails?> =
         professionalDao.observeById(id)
-            .map { it?.toDetailsOrNull() }
+            .map { it?.toDetails() }
             .distinctUntilChanged()
 
     override suspend fun refreshProfessional(id: Int): Result<Unit> =

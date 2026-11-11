@@ -14,7 +14,7 @@ internal fun ProfessionalDto.toEntity() = ProfessionalEntity(
     languages = languages,
     expertise = expertise,
     profilePictureUrl = profilePictureUrl,
-    aboutMe = aboutMe,
+    aboutMe = aboutMe.orEmpty(),
 )
 
 internal fun ProfessionalDto.toSummaryEntity() = ProfessionalSummaryEntity(
@@ -37,6 +37,8 @@ internal fun ProfessionalEntity.toDomain() = Professional(
     profilePictureUrl = profilePictureUrl,
 )
 
-/** Null while only the list summary is cached (no about_me yet). */
-internal fun ProfessionalEntity.toDetailsOrNull(): ProfessionalDetails? =
-    aboutMe?.let { ProfessionalDetails(professional = toDomain(), aboutMe = it) }
+/** Any cached row is a profile; [ProfessionalDetails.aboutMe] stays null until the profile endpoint answers. */
+internal fun ProfessionalEntity.toDetails() = ProfessionalDetails(
+    professional = toDomain(),
+    aboutMe = aboutMe,
+)

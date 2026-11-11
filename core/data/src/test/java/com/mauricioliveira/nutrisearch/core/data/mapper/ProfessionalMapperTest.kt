@@ -16,9 +16,10 @@ class ProfessionalMapperTest {
     )
 
     @Test
-    fun `details are only available once about_me is cached`() {
-        assertNull(dto.toEntity().toDetailsOrNull())
-        assertNotNull(dto.copy(aboutMe = "Hi").toEntity().toDetailsOrNull())
+    fun `a row cached from the list is a profile without about_me`() {
+        val summaryOnly = dto.toEntity().copy(aboutMe = null)
+        assertNull(summaryOnly.toDetails().aboutMe)
+        assertEquals("Hi", dto.copy(aboutMe = "Hi").toEntity().toDetails().aboutMe)
     }
 
     @Test
@@ -27,5 +28,11 @@ class ProfessionalMapperTest {
             listOf("best_match", "rating", "most_popular"),
             ProfessionalSort.entries.map { it.apiValue },
         )
+    }
+
+    @Test
+    fun `a profile without about_me is stored as empty, not as not loaded`() {
+        val entity = dto.toEntity()
+        assertEquals("", entity.aboutMe)
     }
 }

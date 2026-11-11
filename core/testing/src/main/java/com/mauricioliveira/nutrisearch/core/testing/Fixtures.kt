@@ -15,5 +15,5 @@ fun aProfessional(
 
 fun aProfessionalDetails(
     professional: Professional = aProfessional(),
-    aboutMe: String = "There is no word to describe me.",
+    aboutMe: String? = "There is no word to describe me.",
 ) = ProfessionalDetails(professional, aboutMe)

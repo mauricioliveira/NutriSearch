@@ -1,4 +1,8 @@
 <resources>
     <string name="professional_detail_title">Profile</string>
     <string name="back">Back</string>
+    <string name="about_me">About me</string>
+    <string name="show_more">Show More</string>
+    <string name="show_less">Show Less</string>
+    <string name="about_me_unavailable">The description isn\'t available offline yet.</string>
 </resources>

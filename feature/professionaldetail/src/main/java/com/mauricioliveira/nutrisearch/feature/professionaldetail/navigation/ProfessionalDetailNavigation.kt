@@ -4,7 +4,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
-import com.mauricioliveira.nutrisearch.feature.professionaldetail.ui.ProfessionalDetailScreen
+import com.mauricioliveira.nutrisearch.feature.professionaldetail.ui.ProfessionalDetailRoute
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -15,7 +15,7 @@ fun NavController.navigateToProfessionalDetail(professionalId: Int) =
 
 fun NavGraphBuilder.professionalDetailScreen(onBack: () -> Unit) {
     composable<ProfessionalDetailDestination> { entry ->
-        ProfessionalDetailScreen(
+        ProfessionalDetailRoute(
             professionalId = entry.toRoute<ProfessionalDetailDestination>().professionalId,
             onBack = onBack,
         )

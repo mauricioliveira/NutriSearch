@@ -1,29 +1,14 @@
 package com.mauricioliveira.nutrisearch.feature.professionals.ui
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Language
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.mauricioliveira.nutrisearch.core.domain.model.Professional
-import com.mauricioliveira.nutrisearch.core.ui.component.Avatar
-import com.mauricioliveira.nutrisearch.core.ui.component.RatingStars
-import com.mauricioliveira.nutrisearch.core.ui.format.formatRating
+import com.mauricioliveira.nutrisearch.core.ui.component.ProfessionalSummary
 import com.mauricioliveira.nutrisearch.core.ui.theme.NutriSearchTheme
 
 @Composable
@@ -36,69 +21,9 @@ internal fun ProfessionalCard(
         modifier = modifier.fillMaxWidth(),
         onClick = onClick,
     ) {
-        Column(
+        ProfessionalSummary(
+            professional = professional,
             modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                Avatar(
-                    modifier = Modifier.size(96.dp),
-                    name = professional.name,
-                    imageUrl = professional.profilePictureUrl,
-                )
-                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text(
-                        text = professional.name,
-                        style = MaterialTheme.typography.titleLarge,
-                    )
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        RatingStars(professional.rating)
-                        Text(
-                            modifier = Modifier.padding(start = 6.dp),
-                            text = formatRating(professional.rating, professional.ratingCount),
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
-                    }
-                    // Language with the globe icon, as in the mockup
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    ) {
-                        Icon(
-                            modifier = Modifier.size(16.dp),
-                            imageVector = Icons.Default.Language,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                        )
-                        Text(
-                            text = professional.languages.joinToString(),
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
-                    }
-                }
-            }
-
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                professional.expertise.forEach { ExpertiseTag(it) }
-            }
-        }
-    }
-}
-
-@Composable
-private fun ExpertiseTag(text: String) {
-    Surface(
-        shape = RoundedCornerShape(8.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant,
-    ) {
-        Text(
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-            text = text,
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }
