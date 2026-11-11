@@ -13,7 +13,4 @@ val databaseModule = module {
             name = NutriSearchDatabase.NAME
         ).build()
     }
-    single { get<NutriSearchDatabase>().professionalDao() }
-    single { get<NutriSearchDatabase>().searchResultDao() }
-    single { get<NutriSearchDatabase>().remoteKeyDao() }
 }
