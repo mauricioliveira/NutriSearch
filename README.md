@@ -26,9 +26,21 @@ An Android app to search nutrition professionals, sort the results and open a pr
 
 Requirements: Android Studio with support for AGP 9.4, JDK 17. minSdk 28, compileSdk 37.
 
+**Android Studio (recommended):** open the project, let Gradle sync, pick an emulator or device and press Run (`app` configuration).
+
+**Command line:** with an emulator running or a device connected, install the app and open NutriSearch from the launcher:
+
 ```bash
-./gradlew assembleDebug
+./gradlew :app:installDebug
 ```
+
+Or launch it directly (`adb` lives in the SDK's `platform-tools`, e.g. `$ANDROID_HOME/platform-tools/adb` if it is not on your `PATH`):
+
+```bash
+adb shell am start -n com.mauricioliveira.nutrisearch/.MainActivity
+```
+
+To only build the APK: `./gradlew assembleDebug` (output in `app/build/outputs/apk/debug/`).
 
 Tests:
 
