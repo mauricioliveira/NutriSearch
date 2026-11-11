@@ -1,5 +1,6 @@
 package com.mauricioliveira.nutrisearch.feature.professionaldetail.navigation
 
+import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
@@ -17,7 +18,7 @@ fun NavGraphBuilder.professionalDetailScreen(onBack: () -> Unit) {
     composable<ProfessionalDetailDestination> { entry ->
         ProfessionalDetailRoute(
             professionalId = entry.toRoute<ProfessionalDetailDestination>().professionalId,
-            onBack = onBack,
+            onBack = dropUnlessResumed { onBack() },
         )
     }
 }

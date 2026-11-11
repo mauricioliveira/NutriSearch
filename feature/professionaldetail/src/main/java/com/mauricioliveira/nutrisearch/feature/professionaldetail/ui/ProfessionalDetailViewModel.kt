@@ -3,7 +3,10 @@ package com.mauricioliveira.nutrisearch.feature.professionaldetail.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mauricioliveira.nutrisearch.core.domain.model.AppError
+import com.mauricioliveira.nutrisearch.core.domain.model.ProfessionalDetails
+import com.mauricioliveira.nutrisearch.core.domain.model.asAppError
 import com.mauricioliveira.nutrisearch.core.domain.repository.ProfessionalRepository
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -23,24 +26,21 @@ class ProfessionalDetailViewModel(
     )
 
     private val refreshStatus = MutableStateFlow(RefreshStatus())
+    private var refreshJob: Job? = null
 
     /**
-     * Derived from its two sources: the cached profile (Room) and the refresh status.
-     * Cache first: Room emits the saved profile straight away and again after refresh writes it
+     * Cache first: Room emits the saved profile straight away and again after the refresh writes it.
+     * The screen rules live here, so the UI only renders what it is told.
      */
     val state: StateFlow<ProfessionalDetailState> = combine(
         repository.observeProfessional(id = professionalId),
-        refreshStatus
+        refreshStatus,
     ) { details, status ->
-        ProfessionalDetailState(
-            details = details,
-            isRefreshing = status.isRefreshing,
-            error = status.error
-        )
+        toState(details, status)
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
-        initialValue = ProfessionalDetailState()
+        initialValue = ProfessionalDetailState.Loading,
     )
 
     init {
@@ -54,13 +54,29 @@ class ProfessionalDetailViewModel(
     }
 
     private fun refresh() {
-        viewModelScope.launch {
+        if (refreshJob?.isActive == true) return
+
+        refreshJob = viewModelScope.launch {
             refreshStatus.value = RefreshStatus(isRefreshing = true)
             val failure = repository.refreshProfessional(id = professionalId).exceptionOrNull()
             refreshStatus.value = RefreshStatus(
                 isRefreshing = false,
-                error = failure?.let { it as? AppError ?: AppError.Unknown(it) }
+                error = failure?.asAppError()
             )
         }
     }
+
+    private fun toState(
+        details: ProfessionalDetails?,
+        status: RefreshStatus
+    ): ProfessionalDetailState =
+        when {
+            details != null -> ProfessionalDetailState.Content(
+                details = details,
+                isRefreshing = status.isRefreshing,
+                refreshError = status.error,
+            )
+            status.error != null -> ProfessionalDetailState.Error(status.error)
+            else -> ProfessionalDetailState.Loading
+        }
 }

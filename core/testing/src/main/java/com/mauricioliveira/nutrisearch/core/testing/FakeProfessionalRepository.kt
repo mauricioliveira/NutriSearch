@@ -8,6 +8,7 @@ import com.mauricioliveira.nutrisearch.core.domain.model.Professional
 import com.mauricioliveira.nutrisearch.core.domain.model.ProfessionalDetails
 import com.mauricioliveira.nutrisearch.core.domain.model.ProfessionalSort
 import com.mauricioliveira.nutrisearch.core.domain.repository.ProfessionalRepository
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
@@ -20,6 +21,7 @@ class FakeProfessionalRepository : ProfessionalRepository {
     val details = MutableStateFlow<ProfessionalDetails?>(null)
     var refreshError: AppError? = null
     var refreshCalls = 0
+    var refreshGate: CompletableDeferred<Unit>? = null
 
     /** Static data fully loaded, so paging-testing's asSnapshot sees an idle end state. */
     private val loaded = LoadState.NotLoading(endOfPaginationReached = true)
@@ -34,6 +36,7 @@ class FakeProfessionalRepository : ProfessionalRepository {
 
     override suspend fun refreshProfessional(id: Int): Result<Unit> {
         refreshCalls++
+        refreshGate?.await()
         return refreshError?.let { Result.failure(it) } ?: Result.success(Unit)
     }
 }

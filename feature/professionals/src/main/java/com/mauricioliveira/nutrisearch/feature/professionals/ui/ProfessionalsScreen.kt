@@ -43,16 +43,11 @@ import com.mauricioliveira.nutrisearch.core.domain.model.Professional
 import com.mauricioliveira.nutrisearch.core.domain.model.ProfessionalSort
 import com.mauricioliveira.nutrisearch.core.ui.component.ErrorView
 import com.mauricioliveira.nutrisearch.core.ui.component.LoadingView
-import com.mauricioliveira.nutrisearch.core.ui.component.OfflineBanner
+import com.mauricioliveira.nutrisearch.core.ui.component.StaleDataBanner
 import com.mauricioliveira.nutrisearch.core.ui.error.messageRes
 import com.mauricioliveira.nutrisearch.feature.professionals.R
 import kotlinx.coroutines.launch
 import com.mauricioliveira.nutrisearch.core.ui.R as CoreUiR
-
-/** Holds the list shown when the sort changed, to detect when the new sort's data arrives. */
-private class PendingScrollToTop {
-    var listBeforeSortChange: ItemSnapshotList<Professional>? = null
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,17 +58,7 @@ internal fun ProfessionalsScreen(
     onProfessionalClick: (Int) -> Unit,
 ) {
     val listState = rememberLazyListState()
-    val scope = rememberCoroutineScope()
-    val pendingScrollToTop = remember { PendingScrollToTop() }
-    val items = professionals.itemSnapshotList // recompose when the data changes
-
-    SideEffect {
-        val before = pendingScrollToTop.listBeforeSortChange
-        if (before != null && items !== before) {
-            pendingScrollToTop.listBeforeSortChange = null
-            scope.launch { listState.animateScrollToItem(0) }
-        }
-    }
+    val scrollToTopOnNewData = rememberScrollToTopOnNewData(professionals, listState)
 
     Scaffold(
         topBar = { TopAppBar(title = { Text(stringResource(R.string.professionals_title)) }) }
@@ -88,10 +73,10 @@ internal fun ProfessionalsScreen(
                 selected = state.sort,
                 onSelected = { sort ->
                     if (sort != state.sort) {
-                        pendingScrollToTop.listBeforeSortChange = professionals.itemSnapshotList
+                        scrollToTopOnNewData()
                         onIntent(ProfessionalsIntent.SortSelected(sort))
                     }
-                }
+                },
             )
 
             when(val content = listContent(professionals.loadState, professionals.itemCount)) {
@@ -108,7 +93,12 @@ internal fun ProfessionalsScreen(
                     Text(text = stringResource(R.string.empty_professionals))
                 }
                 is ListContent.Content -> {
-                    if (content.showOfflineBanner) OfflineBanner()
+                    content.refreshError?.let { error ->
+                        StaleDataBanner(
+                            error = error,
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                        )
+                    }
                     PullToRefreshBox(
                         modifier = Modifier.fillMaxSize(),
                         isRefreshing = content.isRefreshing,
@@ -123,6 +113,34 @@ internal fun ProfessionalsScreen(
                 }
             }
         }
+    }
+}
+
+/** Holds the list shown when the sort changed, to detect when the new sort's data arrives. */
+private class PendingScrollToTop {
+    var listBeforeSortChange: ItemSnapshotList<Professional>? = null
+}
+
+@Composable
+private fun rememberScrollToTopOnNewData(
+    professionals: LazyPagingItems<Professional>,
+    listState: LazyListState,
+): () -> Unit {
+    val scope = rememberCoroutineScope()
+    val pending = remember { PendingScrollToTop() }
+    val items = professionals.itemSnapshotList // read here so a new snapshot recomposes
+
+    SideEffect {
+        val before = pending.listBeforeSortChange
+        // Empty: the new sort is still loading (full-screen Loading); wait for its rows.
+        if (before != null && items !== before && items.isNotEmpty()) {
+            pending.listBeforeSortChange = null
+            scope.launch { listState.animateScrollToItem(0) }
+        }
+    }
+
+    return remember(professionals) {
+        { pending.listBeforeSortChange = professionals.itemSnapshotList }
     }
 }
 

@@ -22,22 +22,24 @@ class ProfessionalsViewModel(
     private val savedStateHandle: SavedStateHandle,
 ): ViewModel() {
 
-    val state: StateFlow<ProfessionalsState> = savedStateHandle
+    private val sort: Flow<ProfessionalSort> = savedStateHandle
         .getStateFlow(KEY_SORT, ProfessionalSort.Default.name)
-        .map { ProfessionalsState(sort = it.toSortOrDefault()) }
+        .map { it.toSortOrDefault() }
+        .distinctUntilChanged()
+
+    val state: StateFlow<ProfessionalsState> = sort
+        .map { ProfessionalsState(sort = it) }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = ProfessionalsState(
-                sort = savedStateHandle.get<String>(KEY_SORT).toSortOrDefault()
-            )
+                sort = savedStateHandle.get<String>(KEY_SORT).toSortOrDefault(),
+            ),
         )
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val professionals: Flow<PagingData<Professional>> = state
-        .map { it.sort }
-        .distinctUntilChanged()
-        .flatMapLatest { sort -> repository.searchProfessionals(sort) }
+    val professionals: Flow<PagingData<Professional>> = sort
+        .flatMapLatest { repository.searchProfessionals(it) }
         .cachedIn(viewModelScope)
 
     fun onIntent(intent: ProfessionalsIntent) {

@@ -13,6 +13,6 @@ import com.mauricioliveira.nutrisearch.feature.professionals.navigation.professi
 fun NutriSearchNavHost(navController: NavHostController = rememberNavController()) {
     NavHost(navController = navController, startDestination = ProfessionalsDestination) {
         professionalsScreen(onProfessionalClick = navController::navigateToProfessionalDetail)
-        professionalDetailScreen(onBack = { navController.popBackStack() })
+        professionalDetailScreen(onBack = navController::navigateUp)
     }
 }

@@ -2,12 +2,14 @@ package com.mauricioliveira.nutrisearch.feature.professionals.ui
 
 import androidx.paging.CombinedLoadStates
 import androidx.paging.LoadState
+import com.mauricioliveira.nutrisearch.core.domain.model.AppError
+import com.mauricioliveira.nutrisearch.core.domain.model.asAppError
 
 internal sealed interface ListContent {
     data object Loading : ListContent
-    data class Error(val error: Throwable) : ListContent
+    data class Error(val error: AppError) : ListContent
     data object Empty : ListContent
-    data class Content(val isRefreshing: Boolean, val showOfflineBanner: Boolean) : ListContent
+    data class Content(val isRefreshing: Boolean, val refreshError: AppError?) : ListContent
 }
 
 internal fun listContent(loadState: CombinedLoadStates, itemCount: Int): ListContent {
@@ -16,9 +18,9 @@ internal fun listContent(loadState: CombinedLoadStates, itemCount: Int): ListCon
     return when {
         itemCount > 0 -> ListContent.Content(
             isRefreshing = mediatorRefresh is LoadState.Loading,
-            showOfflineBanner = mediatorRefresh is LoadState.Error,
+            refreshError = (mediatorRefresh as? LoadState.Error)?.error?.asAppError(),
         )
-        refresh is LoadState.Error -> ListContent.Error(refresh.error)
+        refresh is LoadState.Error -> ListContent.Error(refresh.error.asAppError())
         refresh is LoadState.Loading -> ListContent.Loading
         loadState.append.endOfPaginationReached -> ListContent.Empty
         else -> ListContent.Loading

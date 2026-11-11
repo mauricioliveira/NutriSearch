@@ -45,12 +45,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.mauricioliveira.nutrisearch.core.domain.model.AppError
 import com.mauricioliveira.nutrisearch.core.domain.model.Professional
 import com.mauricioliveira.nutrisearch.core.domain.model.ProfessionalDetails
 import com.mauricioliveira.nutrisearch.core.ui.component.ErrorView
 import com.mauricioliveira.nutrisearch.core.ui.component.LoadingView
-import com.mauricioliveira.nutrisearch.core.ui.component.OfflineBanner
 import com.mauricioliveira.nutrisearch.core.ui.component.ProfessionalSummary
+import com.mauricioliveira.nutrisearch.core.ui.component.StaleDataBanner
 import com.mauricioliveira.nutrisearch.core.ui.error.messageRes
 import com.mauricioliveira.nutrisearch.core.ui.theme.NutriSearchTheme
 import com.mauricioliveira.nutrisearch.feature.professionaldetail.R
@@ -82,23 +83,32 @@ internal fun ProfessionalDetailScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            when(val content = state.toDetailContent()) {
-                DetailContent.Loading -> LoadingView(modifier = Modifier.fillMaxSize())
-                is DetailContent.Error -> ErrorView(
-                    message = stringResource(content.error.messageRes()),
+            when (state) {
+                ProfessionalDetailState.Loading -> LoadingView(modifier = Modifier.fillMaxSize())
+                is ProfessionalDetailState.Error -> ErrorView(
+                    message = stringResource(state.error.messageRes()),
                     onRetry = { onIntent(ProfessionalDetailIntent.Retry) },
                     modifier = Modifier.fillMaxSize(),
                 )
-                is DetailContent.Content -> {
+                is ProfessionalDetailState.Content -> {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(4.dp),
                     ) {
-                        if (content.isRefreshing) LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                        if (state.isRefreshing) LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                     }
-                    if (content.showOfflineBanner) OfflineBanner()
-                    ProfessionalProfile(details = content.details, refreshFailed = content.showOfflineBanner)
+                    state.refreshError?.let { error ->
+                        StaleDataBanner(
+                            error = error,
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            onRetry = { onIntent(ProfessionalDetailIntent.Retry) },
+                        )
+                    }
+                    ProfessionalProfile(
+                        details = state.details,
+                        refreshFailed = state.refreshError != null,
+                    )
                 }
             }
         }
@@ -139,14 +149,8 @@ private fun ProfessionalProfile(
             label = "aboutMe",
         ) { aboutMe ->
             when {
-                aboutMe != null -> ExpandableText(text = aboutMe, modifier = Modifier.fillMaxWidth())
-                refreshFailed -> Text(
-                    text = stringResource(R.string.about_me_unavailable),
-                    modifier = Modifier.fillMaxWidth(),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                else -> Box(
+                aboutMe == null && refreshFailed -> SecondaryText(stringResource(R.string.about_me_unavailable))
+                aboutMe == null -> Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(96.dp),
@@ -154,6 +158,8 @@ private fun ProfessionalProfile(
                 ) {
                     CircularProgressIndicator(modifier = Modifier.size(24.dp))
                 }
+                aboutMe.isBlank() -> SecondaryText(stringResource(R.string.about_me_empty))
+                else -> ExpandableText(text = aboutMe, modifier = Modifier.fillMaxWidth())
             }
         }
     }
@@ -203,12 +209,22 @@ private fun ExpandableText(
     }
 }
 
+@Composable
+private fun SecondaryText(text: String) {
+    Text(
+        text = text,
+        modifier = Modifier.fillMaxWidth(),
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+}
+
 @Preview(showBackground = true)
 @Composable
 private fun ProfessionalDetailScreenPreview() {
     NutriSearchTheme {
         ProfessionalDetailScreen(
-            state = ProfessionalDetailState(
+            state = ProfessionalDetailState.Content(
                 details = ProfessionalDetails(
                     professional = Professional(
                         id = 1,
@@ -222,7 +238,7 @@ private fun ProfessionalDetailScreenPreview() {
                     aboutMe = "Nutritionist with ten years of experience. ".repeat(10),
                 ),
                 isRefreshing = false,
-                error = null,
+                refreshError = null,
             ),
             onIntent = {},
             onBack = {},
@@ -230,3 +246,80 @@ private fun ProfessionalDetailScreenPreview() {
     }
 }
 
+@Preview(showBackground = true)
+@Composable
+private fun ProfessionalDetailLoadingPreview() {
+    NutriSearchTheme {
+        ProfessionalDetailScreen(
+            state = ProfessionalDetailState.Loading,
+            onIntent = {},
+            onBack = {},
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ProfessionalDetailErrorPreview() {
+    NutriSearchTheme {
+        ProfessionalDetailScreen(
+            state = ProfessionalDetailState.Error(AppError.NoConnection),
+            onIntent = {},
+            onBack = {},
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ProfessionalDetailContentRefreshErrorPreview() {
+    NutriSearchTheme {
+        ProfessionalDetailScreen(
+            state = ProfessionalDetailState.Content(
+                details = ProfessionalDetails(
+                    professional = Professional(
+                        id = 1,
+                        name = "Dr. Jane Doe",
+                        rating = 5,
+                        ratingCount = 42,
+                        languages = listOf("English", "Spanish"),
+                        expertise = listOf("Weight Loss", "Sports Nutrition"),
+                        profilePictureUrl = null,
+                    ),
+                    aboutMe = null,
+                ),
+                isRefreshing = false,
+                refreshError = AppError.NoConnection,
+            ),
+            onIntent = {},
+            onBack = {},
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ProfessionalDetailEmptyAboutMePreview() {
+    NutriSearchTheme {
+        ProfessionalDetailScreen(
+            state = ProfessionalDetailState.Content(
+                details = ProfessionalDetails(
+                    professional = Professional(
+                        id = 1,
+                        name = "Dr. Jane Doe",
+                        rating = 5,
+                        ratingCount = 42,
+                        languages = listOf("English", "Spanish"),
+                        expertise = listOf("Weight Loss", "Sports Nutrition"),
+                        profilePictureUrl = null,
+                    ),
+                    aboutMe = "",
+                ),
+                isRefreshing = false,
+                refreshError = null,
+            ),
+            onIntent = {},
+            onBack = {},
+        )
+    }
+}

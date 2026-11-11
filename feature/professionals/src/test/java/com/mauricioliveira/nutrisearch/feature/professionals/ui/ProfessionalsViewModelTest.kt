@@ -6,6 +6,9 @@ import com.mauricioliveira.nutrisearch.core.domain.model.ProfessionalSort
 import com.mauricioliveira.nutrisearch.core.testing.FakeProfessionalRepository
 import com.mauricioliveira.nutrisearch.core.testing.MainDispatcherRule
 import com.mauricioliveira.nutrisearch.core.testing.aProfessional
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -51,13 +54,18 @@ class ProfessionalsViewModelTest {
         assertEquals("RATING", handle.get<String>(ProfessionalsViewModel.KEY_SORT))
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun `selecting a sort updates the state and loads that sort's results`() = runTest {
         val viewModel = viewModel()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.state.collect {}
+        }
 
         viewModel.onIntent(ProfessionalsIntent.SortSelected(ProfessionalSort.RATING))
-        assertEquals(listOf(2, 3), viewModel.professionals.asSnapshot().map { it.id })
+
         assertEquals(ProfessionalSort.RATING, viewModel.state.value.sort)
+        assertEquals(listOf(2, 3), viewModel.professionals.asSnapshot().map { it.id })
         assertEquals(ProfessionalSort.RATING, repository.requestedSorts.last())
     }
 
